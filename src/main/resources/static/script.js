@@ -48,13 +48,28 @@ function openAICore() {
     });
 }
 
-const aiInput = document.querySelector(".ai-input-area input");
-const aiSendButton = document.querySelector(".ai-input-area button");
-const aiChat = document.querySelector("#ai-chat");
+/* =========================================================
+   NEXORA AI CORE V3
+   ========================================================= */
 
-const thinkingCore = document.querySelector("#nexora-thinking");
-const thinkingStatus = document.querySelector("#thinking-status");
-const thinkingSteps = document.querySelectorAll(".thinking-step");
+const aiInput =
+    document.querySelector(".ai-input-area input");
+
+const aiSendButton =
+    document.querySelector(".ai-input-area button");
+
+const aiChat =
+    document.querySelector("#ai-chat");
+
+const thinkingCore =
+    document.querySelector("#nexora-thinking");
+
+const thinkingStatus =
+    document.querySelector("#thinking-status");
+
+const thinkingSteps =
+    document.querySelectorAll(".thinking-step");
+
 
 if (
     aiInput &&
@@ -65,287 +80,865 @@ if (
 ) {
 
     let controller = null;
+
     let thinkingTimer = null;
 
-    const thinkingMessages = [
-        "Connecting to Intelligence Core...",
-        "Analyzing your request...",
+    let currentStep = 0;
+
+    let requestStartTime = 0;
+
+
+    /* =====================================================
+       PROCESSING STATES
+       ===================================================== */
+
+    const processingStates = [
+
+        "Receiving request...",
+
+        "Analyzing request structure...",
+
         "Understanding context...",
-        "Exploring relevant knowledge...",
-        "Building logical connections...",
-        "Formulating the best response..."
+
+        "Connecting relevant knowledge...",
+
+        "Processing information...",
+
+        "Constructing response...",
+
+        "Refining information...",
+
+        "Generating answer..."
+
     ];
 
-    function startThinkingAnimation() {
+
+    /* =====================================================
+       DETECT TASK MODE
+       ===================================================== */
+
+    function detectMode(message) {
+
+        const text =
+            message.toLowerCase();
+
+
+        if (
+            text.includes("code") ||
+            text.includes("java") ||
+            text.includes("python") ||
+            text.includes("program") ||
+            text.includes("javascript") ||
+            text.includes("html") ||
+            text.includes("css") ||
+            text.includes("bug") ||
+            text.includes("error")
+        ) {
+
+            return "code";
+        }
+
+
+        if (
+            text.includes("math") ||
+            text.includes("calculate") ||
+            text.includes("equation") ||
+            text.includes("formula") ||
+            text.includes("probability") ||
+            text.includes("statistics")
+        ) {
+
+            return "math";
+        }
+
+
+        if (
+            text.includes("learn") ||
+            text.includes("explain") ||
+            text.includes("study") ||
+            text.includes("exam") ||
+            text.includes("definition") ||
+            text.includes("concept")
+        ) {
+
+            return "learning";
+        }
+
+
+        if (
+            text.includes("data") ||
+            text.includes("dataset") ||
+            text.includes("analysis") ||
+            text.includes("analytics") ||
+            text.includes("chart") ||
+            text.includes("graph")
+        ) {
+
+            return "analytics";
+        }
+
+
+        if (
+            text.includes("design") ||
+            text.includes("idea") ||
+            text.includes("creative") ||
+            text.includes("story") ||
+            text.includes("write")
+        ) {
+
+            return "creative";
+        }
+
+
+        return "general";
+    }
+
+
+    /* =====================================================
+       MARKDOWN RENDERER
+       ===================================================== */
+
+    function escapeHTML(text) {
+
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+
+    function renderMarkdown(text) {
+
+        let html =
+            escapeHTML(text);
+
+
+        /* code blocks */
+
+        html = html.replace(
+            /```([\s\S]*?)```/g,
+
+            function (_, code) {
+
+                return `
+                    <pre class="ai-code-block">
+                        <code>${code.trim()}</code>
+                    </pre>
+                `;
+            }
+        );
+
+
+        /* headings */
+
+        html = html.replace(
+            /^### (.*)$/gm,
+            "<h4>$1</h4>"
+        );
+
+
+        html = html.replace(
+            /^## (.*)$/gm,
+            "<h3>$1</h3>"
+        );
+
+
+        html = html.replace(
+            /^# (.*)$/gm,
+            "<h2>$1</h2>"
+        );
+
+
+        /* bold */
+
+        html = html.replace(
+            /\*\*(.*?)\*\*/g,
+            "<strong>$1</strong>"
+        );
+
+
+        /* inline code */
+
+        html = html.replace(
+            /`([^`\n]+)`/g,
+            "<code class=\"inline-code\">$1</code>"
+        );
+
+
+        /* unordered lists */
+
+        html = html.replace(
+            /^[•\-] (.*)$/gm,
+            "<li>$1</li>"
+        );
+
+
+        html = html.replace(
+            /((?:<li>.*<\/li>\s*)+)/g,
+            "<ul>$1</ul>"
+        );
+
+
+        /* numbered lists */
+
+        html = html.replace(
+            /^\d+\.\s+(.*)$/gm,
+            "<li>$1</li>"
+        );
+
+
+        /* paragraphs */
+
+        html = html.replace(
+            /\n{2,}/g,
+            "<br><br>"
+        );
+
+
+        html = html.replace(
+            /\n/g,
+            "<br>"
+        );
+
+
+        return html;
+    }
+
+
+    /* =====================================================
+       MODE VISUAL
+       ===================================================== */
+
+    function applyMode(mode) {
+
+        const classes = [
+            "mode-code",
+            "mode-learning",
+            "mode-math",
+            "mode-analytics",
+            "mode-creative"
+        ];
+
+
+        classes.forEach(
+            className =>
+                thinkingCore.classList.remove(className)
+        );
+
+
+        if (mode !== "general") {
+
+            thinkingCore.classList.add(
+                `mode-${mode}`
+            );
+        }
+    }
+
+
+    /* =====================================================
+       THINKING START
+       ===================================================== */
+
+    function startThinkingAnimation(mode) {
+
+        currentStep = 0;
+
+        requestStartTime =
+            performance.now();
+
 
         thinkingCore.classList.add("active");
 
-        let currentStep = 0;
+        thinkingCore.classList.remove("completed");
+
+
+        applyMode(mode);
+
 
         thinkingStatus.textContent =
-            thinkingMessages[0];
+            processingStates[0];
 
-        thinkingSteps.forEach(step => {
-            step.classList.remove("active");
-        });
 
-        if (thinkingSteps[0]) {
-            thinkingSteps[0].classList.add("active");
-        }
+        thinkingSteps.forEach(
+            step => {
 
-        thinkingTimer = setInterval(() => {
-
-            currentStep++;
-
-            if (currentStep < thinkingMessages.length) {
-
-                thinkingStatus.textContent =
-                    thinkingMessages[currentStep];
-
-            }
-
-            thinkingSteps.forEach(step => {
-                step.classList.remove("active");
-            });
-
-            const stepIndex =
-                Math.min(
-                    currentStep,
-                    thinkingSteps.length - 1
+                step.classList.remove(
+                    "active",
+                    "complete"
                 );
 
-            if (thinkingSteps[stepIndex]) {
-                thinkingSteps[stepIndex]
-                    .classList.add("active");
             }
+        );
 
-        }, 1800);
+
+        if (thinkingSteps[0]) {
+
+            thinkingSteps[0]
+                .classList.add("active");
+        }
+
+
+        /* ===============================================
+           PROGRESS STATE ENGINE
+           =============================================== */
+
+        thinkingTimer =
+            setInterval(() => {
+
+                if (
+                    currentStep <
+                    processingStates.length - 1
+                ) {
+
+                    if (thinkingSteps[currentStep]) {
+
+                        thinkingSteps[currentStep]
+                            .classList.remove("active");
+
+                        thinkingSteps[currentStep]
+                            .classList.add("complete");
+                    }
+
+
+                    currentStep++;
+
+
+                    thinkingStatus.textContent =
+                        processingStates[currentStep];
+
+
+                    if (thinkingSteps[currentStep]) {
+
+                        thinkingSteps[currentStep]
+                            .classList.add("active");
+                    }
+
+                }
+
+            }, 2200);
     }
+
+
+    /* =====================================================
+       STOP THINKING
+       ===================================================== */
 
     function stopThinkingAnimation() {
 
         if (thinkingTimer) {
-            clearInterval(thinkingTimer);
-            thinkingTimer = null;
-        }
 
-        thinkingCore.classList.remove("active");
-
-        thinkingSteps.forEach(step => {
-            step.classList.remove("active");
-        });
-    }
-
-    aiSendButton.addEventListener(
-        "click",
-        async function () {
-
-            const message =
-                aiInput.value.trim();
-
-            if (message === "") {
-                return;
-            }
-
-            if (controller) {
-                controller.abort();
-            }
-
-            controller =
-                new AbortController();
-
-            // USER MESSAGE
-
-            const userMessage =
-                document.createElement("div");
-
-            userMessage.classList.add(
-                "user-message"
+            clearInterval(
+                thinkingTimer
             );
 
-            userMessage.innerHTML = `
-                <strong>You</strong>
-                <p>${message}</p>
-            `;
+            thinkingTimer = null;
+        }
+    }
 
-            aiChat.appendChild(userMessage);
 
-            // START INTELLIGENCE CORE
+    /* =====================================================
+       RESPONSE COMPLETE
+       ===================================================== */
 
-            startThinkingAnimation();
+    function completeThinkingAnimation() {
 
-            aiInput.value = "";
+        stopThinkingAnimation();
 
-            try {
 
-                const result =
-                    await fetch(
-                        "/api/ai/chat",
+        thinkingSteps.forEach(
+            step => {
+
+                step.classList.remove(
+                    "active"
+                );
+
+                step.classList.add(
+                    "complete"
+                );
+
+            }
+        );
+
+
+        thinkingStatus.textContent =
+            "Response ready";
+
+
+        thinkingCore.classList.add(
+            "completed"
+        );
+
+
+        const processingState =
+            thinkingCore.querySelector(
+                ".processing-state"
+            );
+
+
+        if (processingState) {
+
+            processingState.textContent =
+                "COMPLETE";
+        }
+
+
+        setTimeout(() => {
+
+            thinkingCore.classList.remove(
+                "completed"
+            );
+
+            thinkingCore.classList.remove(
+                "active"
+            );
+
+        }, 1100);
+    }
+
+
+    /* =====================================================
+       CREATE USER MESSAGE
+       ===================================================== */
+
+    function addUserMessage(message) {
+
+        const userMessage =
+            document.createElement("div");
+
+
+        userMessage.classList.add(
+            "user-message"
+        );
+
+
+        userMessage.innerHTML = `
+
+            <strong>You</strong>
+
+            <p>
+                ${escapeHTML(message)}
+            </p>
+
+        `;
+
+
+        aiChat.appendChild(
+            userMessage
+        );
+    }
+
+
+    /* =====================================================
+       CREATE AI MESSAGE
+       ===================================================== */
+
+    function createAIMessage() {
+
+        const aiReply =
+            document.createElement("div");
+
+
+        aiReply.classList.add(
+            "ai-message"
+        );
+
+
+        aiReply.innerHTML = `
+
+            <div class="ai-avatar">
+                ✦
+            </div>
+
+            <div class="ai-response-container">
+
+                <strong>NEXORA AI</strong>
+
+                <div
+                    class="ai-response"
+                ></div>
+
+                <div
+                    class="ai-stream-status"
+                >
+                    Generating...
+                </div>
+
+            </div>
+
+        `;
+
+
+        aiChat.appendChild(
+            aiReply
+        );
+
+
+        return aiReply;
+    }
+
+
+    /* =====================================================
+       SEND MESSAGE
+       ===================================================== */
+
+    async function sendMessage() {
+
+        const message =
+            aiInput.value.trim();
+
+
+        if (!message) {
+
+            return;
+        }
+
+
+        /* stop previous request */
+
+        if (controller) {
+
+            controller.abort();
+        }
+
+
+        controller =
+            new AbortController();
+
+
+        const mode =
+            detectMode(message);
+
+
+        addUserMessage(
+            message
+        );
+
+
+        aiInput.value = "";
+
+
+        aiInput.disabled = true;
+
+        aiSendButton.disabled = true;
+
+
+        startThinkingAnimation(
+            mode
+        );
+
+
+        const aiReply =
+            createAIMessage();
+
+
+        const responseText =
+            aiReply.querySelector(
+                ".ai-response"
+            );
+
+
+        const streamStatus =
+            aiReply.querySelector(
+                ".ai-stream-status"
+            );
+
+
+        try {
+
+            const result =
+                await fetch(
+                    "/api/ai/chat",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "text/plain"
+                        },
+
+                        body: message,
+
+                        signal:
+                            controller.signal
+                    }
+                );
+
+
+            if (!result.ok) {
+
+                throw new Error(
+                    `Backend request failed: ${result.status}`
+                );
+            }
+
+
+            if (!result.body) {
+
+                throw new Error(
+                    "Streaming is not supported."
+                );
+            }
+
+
+            const reader =
+                result.body.getReader();
+
+
+            const decoder =
+                new TextDecoder();
+
+
+            let fullResponse = "";
+
+
+            /* =========================================
+               STREAM RESPONSE
+               ========================================= */
+
+            while (true) {
+
+                const {
+                    value,
+                    done
+                } =
+                    await reader.read();
+
+
+                if (done) {
+
+                    break;
+                }
+
+
+                const chunk =
+                    decoder.decode(
+                        value,
                         {
-                            method: "POST",
-                            headers: {
-                                "Content-Type":
-                                    "text/plain"
-                            },
-                            body: message,
-                            signal:
-                                controller.signal
+                            stream: true
                         }
                     );
 
-                if (!result.ok) {
-                    throw new Error(
-                        "Backend request failed"
-                    );
+
+                if (!chunk) {
+
+                    continue;
                 }
 
-                if (!result.body) {
-                    throw new Error(
-                        "Streaming is not supported"
+
+                fullResponse +=
+                    chunk;
+
+
+                responseText.innerHTML =
+                    renderMarkdown(
+                        fullResponse
                     );
-                }
 
-                const reader =
-                    result.body.getReader();
 
-                const decoder =
-                    new TextDecoder();
+                streamStatus.textContent =
+                    "Generating response";
 
-                let fullResponse = "";
 
-                let aiReply =
-                    document.createElement("div");
+                aiChat.scrollTop =
+                    aiChat.scrollHeight;
+            }
 
-                aiReply.classList.add(
-                    "ai-message"
+
+            /* flush decoder */
+
+            const finalChunk =
+                decoder.decode();
+
+
+            if (finalChunk) {
+
+                fullResponse +=
+                    finalChunk;
+            }
+
+
+            responseText.innerHTML =
+                renderMarkdown(
+                    fullResponse
                 );
 
-                aiReply.innerHTML = `
-                    <div class="ai-avatar">✦</div>
 
-                    <div>
-                        <strong>NEXORA AI</strong>
+            if (
+                streamStatus
+            ) {
 
-                        <p class="ai-response"></p>
-                    </div>
+                streamStatus.textContent =
+                    "Response complete";
+            }
+
+
+            completeThinkingAnimation();
+
+
+            /* =========================================
+               RESPONSE TIME
+               ========================================= */
+
+            const elapsed =
+                (
+                    performance.now() -
+                    requestStartTime
+                ) / 1000;
+
+
+            console.log(
+                `NEXORA response completed in ${elapsed.toFixed(1)}s`
+            );
+
+
+            if (
+                fullResponse.trim() === ""
+            ) {
+
+                responseText.innerHTML = `
+                    <p>
+                        NEXORA could not generate
+                        a response.
+                    </p>
+                `;
+            }
+
+
+        } catch (error) {
+
+            stopThinkingAnimation();
+
+
+            thinkingCore.classList.remove(
+                "active"
+            );
+
+
+            if (
+                error.name ===
+                "AbortError"
+            ) {
+
+                console.log(
+                    "NEXORA generation stopped."
+                );
+
+
+            } else {
+
+                console.error(
+                    "NEXORA AI error:",
+                    error
+                );
+
+
+                responseText.innerHTML = `
+
+                    <p>
+                        <strong>
+                            NEXORA could not connect
+                            to the AI engine.
+                        </strong>
+                    </p>
+
+                    <p>
+                        Make sure Ollama and the
+                        Spring Boot backend are running.
+                    </p>
+
                 `;
 
-                aiChat.appendChild(aiReply);
 
-                const responseText =
-                    aiReply.querySelector(
-                        ".ai-response"
-                    );
+                if (streamStatus) {
 
-                while (true) {
-
-                    const {
-                        value,
-                        done
-                    } = await reader.read();
-
-                    if (done) {
-                        break;
-                    }
-
-                    const chunk =
-                        decoder.decode(
-                            value,
-                            {
-                                stream: true
-                            }
-                        );
-
-                    fullResponse += chunk;
-
-                    responseText.textContent =
-                        fullResponse;
-
-                    aiChat.scrollTop =
-                        aiChat.scrollHeight;
+                    streamStatus.textContent =
+                        "Connection error";
                 }
 
-                stopThinkingAnimation();
-
-                if (
-                    fullResponse.trim() === ""
-                ) {
-
-                    responseText.textContent =
-                        "NEXORA could not generate a response.";
-                }
-
-            } catch (error) {
-
-                stopThinkingAnimation();
-
-                if (
-                    error.name ===
-                    "AbortError"
-                ) {
-
-                    console.log(
-                        "NEXORA generation stopped."
-                    );
-
-                } else {
-
-                    const errorMessage =
-                        document.createElement(
-                            "div"
-                        );
-
-                    errorMessage.classList.add(
-                        "ai-message"
-                    );
-
-                    errorMessage.innerHTML = `
-                        <div class="ai-avatar">⚠</div>
-
-                        <div>
-                            <strong>NEXORA AI</strong>
-
-                            <p>
-                                NEXORA backend is not responding.
-                                Please make sure the Spring Boot
-                                server is running.
-                            </p>
-                        </div>
-                    `;
-
-                    aiChat.appendChild(
-                        errorMessage
-                    );
-
-                    console.error(error);
-                }
-
-            } finally {
-
-                controller = null;
             }
+
+        } finally {
+
+            controller = null;
+
+            aiInput.disabled = false;
+
+            aiSendButton.disabled = false;
+
+            aiInput.focus();
         }
+    }
+
+
+    /* =====================================================
+       BUTTON
+       ===================================================== */
+
+    aiSendButton.addEventListener(
+        "click",
+        sendMessage
     );
 
-    // ENTER TO SEND
+
+    /* =====================================================
+       ENTER TO SEND
+       ===================================================== */
 
     aiInput.addEventListener(
         "keydown",
-        function (event) {
+        function(event) {
 
-            if (event.key === "Enter") {
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
 
                 event.preventDefault();
 
-                aiSendButton.click();
+                sendMessage();
             }
+
         }
     );
+
 }
+
+
+/* =========================================================
+   EXISTING NEXORA FUNCTIONS
+   ========================================================= */
+
 function openCreator() {
-    document.getElementById("creator-interface").scrollIntoView({
-        behavior: "smooth"
-    });
+
+    const creator =
+        document.getElementById(
+            "creator-interface"
+        );
+
+
+    if (creator) {
+
+        creator.scrollIntoView({
+            behavior: "smooth"
+        });
+    }
+}
+
+
+function openCodeLab() {
+
+    const codeLab =
+        document.getElementById(
+            "code-lab-interface"
+        );
+
+
+    if (codeLab) {
+
+        codeLab.scrollIntoView({
+            behavior: "smooth"
+        });
+    }
 }
 
 function openCodeLab() {

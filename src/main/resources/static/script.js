@@ -52,137 +52,295 @@ const aiInput = document.querySelector(".ai-input-area input");
 const aiSendButton = document.querySelector(".ai-input-area button");
 const aiChat = document.querySelector("#ai-chat");
 
-if (aiInput && aiSendButton && aiChat) {
+const thinkingCore = document.querySelector("#nexora-thinking");
+const thinkingStatus = document.querySelector("#thinking-status");
+const thinkingSteps = document.querySelectorAll(".thinking-step");
+
+if (
+    aiInput &&
+    aiSendButton &&
+    aiChat &&
+    thinkingCore &&
+    thinkingStatus
+) {
 
     let controller = null;
+    let thinkingTimer = null;
 
-    aiSendButton.addEventListener("click", async function () {
+    const thinkingMessages = [
+        "Connecting to Intelligence Core...",
+        "Analyzing your request...",
+        "Understanding context...",
+        "Exploring relevant knowledge...",
+        "Building logical connections...",
+        "Formulating the best response..."
+    ];
 
-        const message = aiInput.value.trim();
+    function startThinkingAnimation() {
 
-        if (message === "") {
-            return;
+        thinkingCore.classList.add("active");
+
+        let currentStep = 0;
+
+        thinkingStatus.textContent =
+            thinkingMessages[0];
+
+        thinkingSteps.forEach(step => {
+            step.classList.remove("active");
+        });
+
+        if (thinkingSteps[0]) {
+            thinkingSteps[0].classList.add("active");
         }
 
-        if (controller) {
-            controller.abort();
-        }
+        thinkingTimer = setInterval(() => {
 
-        controller = new AbortController();
+            currentStep++;
 
-        // USER MESSAGE
-        const userMessage = document.createElement("div");
+            if (currentStep < thinkingMessages.length) {
 
-        userMessage.classList.add("user-message");
+                thinkingStatus.textContent =
+                    thinkingMessages[currentStep];
 
-        userMessage.innerHTML = `
-            <strong>You</strong>
-            <p>${message}</p>
-        `;
+            }
 
-        aiChat.appendChild(userMessage);
-
-        // AI MESSAGE
-        const aiReply = document.createElement("div");
-
-        aiReply.classList.add("ai-message");
-
-        aiReply.innerHTML = `
-            <div class="ai-avatar">✦</div>
-            <div>
-                <strong>NEXORA AI</strong>
-                <p class="ai-response">✦ NEXORA is thinking...</p>
-            </div>
-        `;
-
-        aiChat.appendChild(aiReply);
-
-        const responseText =
-            aiReply.querySelector(".ai-response");
-
-        aiInput.value = "";
-
-        try {
-
-            const result = await fetch("/api/ai/chat", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "text/plain"
-                },
-                body: message,
-                signal: controller.signal
+            thinkingSteps.forEach(step => {
+                step.classList.remove("active");
             });
 
-            if (!result.ok) {
-                throw new Error("Backend request failed");
+            const stepIndex =
+                Math.min(
+                    currentStep,
+                    thinkingSteps.length - 1
+                );
+
+            if (thinkingSteps[stepIndex]) {
+                thinkingSteps[stepIndex]
+                    .classList.add("active");
             }
 
-            if (!result.body) {
-                throw new Error("Streaming is not supported");
+        }, 1800);
+    }
+
+    function stopThinkingAnimation() {
+
+        if (thinkingTimer) {
+            clearInterval(thinkingTimer);
+            thinkingTimer = null;
+        }
+
+        thinkingCore.classList.remove("active");
+
+        thinkingSteps.forEach(step => {
+            step.classList.remove("active");
+        });
+    }
+
+    aiSendButton.addEventListener(
+        "click",
+        async function () {
+
+            const message =
+                aiInput.value.trim();
+
+            if (message === "") {
+                return;
             }
 
-            responseText.textContent = "✦ Generating...";
+            if (controller) {
+                controller.abort();
+            }
 
-            const reader = result.body.getReader();
-            const decoder = new TextDecoder();
+            controller =
+                new AbortController();
 
-            let fullResponse = "";
+            // USER MESSAGE
 
-            while (true) {
+            const userMessage =
+                document.createElement("div");
 
-                const { value, done } = await reader.read();
+            userMessage.classList.add(
+                "user-message"
+            );
 
-                if (done) {
-                    break;
+            userMessage.innerHTML = `
+                <strong>You</strong>
+                <p>${message}</p>
+            `;
+
+            aiChat.appendChild(userMessage);
+
+            // START INTELLIGENCE CORE
+
+            startThinkingAnimation();
+
+            aiInput.value = "";
+
+            try {
+
+                const result =
+                    await fetch(
+                        "/api/ai/chat",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "text/plain"
+                            },
+                            body: message,
+                            signal:
+                                controller.signal
+                        }
+                    );
+
+                if (!result.ok) {
+                    throw new Error(
+                        "Backend request failed"
+                    );
                 }
 
-                const chunk = decoder.decode(value, {
-                    stream: true
-                });
+                if (!result.body) {
+                    throw new Error(
+                        "Streaming is not supported"
+                    );
+                }
 
-                fullResponse += chunk;
+                const reader =
+                    result.body.getReader();
 
-                responseText.textContent = fullResponse;
+                const decoder =
+                    new TextDecoder();
 
-                aiChat.scrollTop = aiChat.scrollHeight;
+                let fullResponse = "";
+
+                let aiReply =
+                    document.createElement("div");
+
+                aiReply.classList.add(
+                    "ai-message"
+                );
+
+                aiReply.innerHTML = `
+                    <div class="ai-avatar">✦</div>
+
+                    <div>
+                        <strong>NEXORA AI</strong>
+
+                        <p class="ai-response"></p>
+                    </div>
+                `;
+
+                aiChat.appendChild(aiReply);
+
+                const responseText =
+                    aiReply.querySelector(
+                        ".ai-response"
+                    );
+
+                while (true) {
+
+                    const {
+                        value,
+                        done
+                    } = await reader.read();
+
+                    if (done) {
+                        break;
+                    }
+
+                    const chunk =
+                        decoder.decode(
+                            value,
+                            {
+                                stream: true
+                            }
+                        );
+
+                    fullResponse += chunk;
+
+                    responseText.textContent =
+                        fullResponse;
+
+                    aiChat.scrollTop =
+                        aiChat.scrollHeight;
+                }
+
+                stopThinkingAnimation();
+
+                if (
+                    fullResponse.trim() === ""
+                ) {
+
+                    responseText.textContent =
+                        "NEXORA could not generate a response.";
+                }
+
+            } catch (error) {
+
+                stopThinkingAnimation();
+
+                if (
+                    error.name ===
+                    "AbortError"
+                ) {
+
+                    console.log(
+                        "NEXORA generation stopped."
+                    );
+
+                } else {
+
+                    const errorMessage =
+                        document.createElement(
+                            "div"
+                        );
+
+                    errorMessage.classList.add(
+                        "ai-message"
+                    );
+
+                    errorMessage.innerHTML = `
+                        <div class="ai-avatar">⚠</div>
+
+                        <div>
+                            <strong>NEXORA AI</strong>
+
+                            <p>
+                                NEXORA backend is not responding.
+                                Please make sure the Spring Boot
+                                server is running.
+                            </p>
+                        </div>
+                    `;
+
+                    aiChat.appendChild(
+                        errorMessage
+                    );
+
+                    console.error(error);
+                }
+
+            } finally {
+
+                controller = null;
             }
-
-            if (fullResponse.trim() === "") {
-                responseText.textContent =
-                    "NEXORA could not generate a response.";
-            }
-
-        } catch (error) {
-
-            if (error.name === "AbortError") {
-
-                responseText.textContent =
-                    "Generation stopped.";
-
-            } else {
-
-                responseText.textContent =
-                    "⚠️ NEXORA backend is not responding. Please make sure the Spring Boot server is running.";
-
-                console.error(error);
-            }
-
-        } finally {
-
-            controller = null;
         }
-    });
+    );
 
     // ENTER TO SEND
-    aiInput.addEventListener("keydown", function (event) {
 
-        if (event.key === "Enter") {
+    aiInput.addEventListener(
+        "keydown",
+        function (event) {
 
-            event.preventDefault();
+            if (event.key === "Enter") {
 
-            aiSendButton.click();
+                event.preventDefault();
+
+                aiSendButton.click();
+            }
         }
-    });
+    );
 }
 function openCreator() {
     document.getElementById("creator-interface").scrollIntoView({

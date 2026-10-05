@@ -1606,3 +1606,269 @@ body {
 .activity-item small {
     color: rgba(255, 255, 255, 0.4);
 }
+/* =========================================
+   NEXORA INTELLIGENCE CORE
+   ========================================= */
+
+.nexora-thinking {
+    display: none;
+    align-items: center;
+    gap: 28px;
+    padding: 28px;
+    margin: 18px 0;
+    border: 1px solid rgba(120, 150, 255, 0.18);
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at 15% 50%, rgba(80, 120, 255, 0.12), transparent 35%),
+        rgba(10, 15, 30, 0.72);
+    box-shadow:
+        0 0 35px rgba(80, 120, 255, 0.08),
+        inset 0 0 30px rgba(80, 120, 255, 0.03);
+    overflow: hidden;
+    position: relative;
+}
+
+.nexora-thinking.active {
+    display: flex;
+    animation: thinkingAppear 0.5s ease forwards;
+}
+
+/* CORE */
+
+.thinking-core {
+    width: 105px;
+    height: 105px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.core-brain {
+    width: 58px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(100, 140, 255, 0.25),
+        rgba(30, 40, 80, 0.5)
+    );
+    box-shadow:
+        0 0 15px rgba(100, 140, 255, 0.5),
+        0 0 35px rgba(100, 140, 255, 0.25);
+    animation: brainPulse 1.8s ease-in-out infinite;
+    position: relative;
+    z-index: 3;
+}
+
+/* ROTATING RINGS */
+
+.core-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(110, 150, 255, 0.45);
+}
+
+.ring-one {
+    width: 72px;
+    height: 72px;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    animation: rotateCore 3s linear infinite;
+}
+
+.ring-two {
+    width: 88px;
+    height: 88px;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    animation: rotateCoreReverse 4s linear infinite;
+}
+
+.ring-three {
+    width: 104px;
+    height: 104px;
+    border-top-color: rgba(140, 170, 255, 0.7);
+    border-bottom-color: transparent;
+    animation: rotateCore 5s linear infinite;
+}
+
+/* THINKING CONTENT */
+
+.thinking-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.thinking-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    opacity: 0.7;
+    margin-bottom: 8px;
+}
+
+.thinking-status {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    animation: statusGlow 1.5s ease-in-out infinite;
+}
+
+.thinking-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.thinking-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    opacity: 0.28;
+    transition: all 0.4s ease;
+}
+
+.thinking-step span:first-child {
+    font-size: 8px;
+}
+
+.thinking-step.active {
+    opacity: 1;
+    transform: translateX(5px);
+}
+
+.thinking-step.active span:first-child {
+    animation: stepPulse 1s ease-in-out infinite;
+}
+
+/* ANIMATIONS */
+
+@keyframes thinkingAppear {
+
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes brainPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow:
+            0 0 15px rgba(100, 140, 255, 0.45),
+            0 0 35px rgba(100, 140, 255, 0.2);
+    }
+
+    50% {
+        transform: scale(1.08);
+        box-shadow:
+            0 0 25px rgba(100, 140, 255, 0.75),
+            0 0 55px rgba(100, 140, 255, 0.3);
+    }
+}
+
+@keyframes rotateCore {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotateCoreReverse {
+
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes statusGlow {
+
+    0%,
+    100% {
+        opacity: 0.65;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes stepPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 1;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .nexora-thinking {
+        gap: 18px;
+        padding: 20px;
+    }
+
+    .thinking-core {
+        width: 78px;
+        height: 78px;
+    }
+
+    .core-brain {
+        width: 46px;
+        height: 46px;
+        font-size: 27px;
+    }
+
+    .ring-one {
+        width: 58px;
+        height: 58px;
+    }
+
+    .ring-two {
+        width: 68px;
+        height: 68px;
+    }
+
+    .ring-three {
+        width: 78px;
+        height: 78px;
+    }
+
+    .thinking-status {
+        font-size: 14px;
+    }
+
+    .thinking-step {
+        font-size: 11px;
+    }
+}

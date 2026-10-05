@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NEXORA — Digital Intelligence Workspace</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            NEX<span>ORA</span>
+        </div>
+
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#workspace">Workspace</a>
+            <a href="#">Tools</a>
+            <a href="#">About</a>
+        </div>
+
+       <button class="launch-btn" onclick="openWorkspace()">
+    Launch NEXORA
+</button>
+
+    </nav>
+
+
+    <!-- HERO SECTION -->
+
+    <main>
+    
+        
+
+        <section class="hero">
+
+            <div class="hero-content">
+
+                <div class="badge">
+                    ✦ DIGITAL INTELLIGENCE SYSTEM
+                </div>
+
+                <h1 class="hero-title">
+
+    <span class="title-line">BUILD</span>
+
+    <span class="title-line">
+        WHAT'S
+        <span class="gradient-word">NEXT</span>
+    </span>
+
+</h1>
+
+                <p>
+                    NEXORA is your intelligent digital workspace
+                    for creating, building, learning and managing
+                    your ideas in one powerful environment.
+                </p>
+
+                <div class="hero-buttons">
+
+                    <button class="primary-btn">
+                        Enter NEXORA
+                    </button>
+
+                    <button class="secondary-btn" onclick="openWorkspace()">
+                          Explore Workspace
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+        <section class="workspace" id="workspace">
+
+    <div class="workspace-header">
+
+        <span class="workspace-label">
+            NEXORA WORKSPACE
+        </span>
+
+        <h2>
+            YOUR DIGITAL
+            <span>INTELLIGENCE HUB</span>
+        </h2>
+
+        <p>
+            Create, learn, build and manage everything
+            from one intelligent workspace.
+        </p>
+
+    </div>
+
+
+    <div class="workspace-grid">
+
+        <div class="workspace-card">
+            <div class="card-icon">✦</div>
+            <h3>AI Core</h3>
+            <p>Ask questions, generate ideas and work with AI.</p>
+            <button onclick="openAICore()">Open AI Core</button>
+        </div>
+
+
+        <div class="workspace-card">
+            <div class="card-icon">◈</div>
+            <h3>Creator</h3>
+            <p>Create content ideas, designs and creative projects.</p>
+            <button onclick="openCreator()">Open Creator</button>
+        </div>
+
+
+        <div class="workspace-card">
+            <div class="card-icon">&lt;/&gt;</div>
+            <h3>Code Lab</h3>
+            <p>Write, test and improve your code in one place.</p>
+            <button onclick="openCodeLab()">Open Code Lab</button>
+        </div>
+
+
+        <div class="workspace-card">
+            <div class="card-icon">◎</div>
+            <h3>Learning</h3>
+            <p>Learn concepts, solve questions and organize your study.</p>
+            <button onclick="openLearning()">Open Learning</button>
+        </div>
+
+
+        <div class="workspace-card">
+            <div class="card-icon">▣</div>
+            <h3>Projects</h3>
+            <p>Manage your ideas, tasks and project progress.</p>
+            <button onclick="openProjects()">Open Projects</button>
+        </div>
+
+
+        <div class="workspace-card">
+            <div class="card-icon">◒</div>
+            <h3>Analytics</h3>
+            <p>Track your activity and understand your progress.</p>
+            <button onclick="openAnalytics()">Open Analytics</button>
+        </div>
+
+    </div>
+
+</section>
+<section class="ai-core" id="ai-core">
+
+    <div class="ai-core-header">
+        <span>✦ NEXORA AI CORE</span>
+
+        <h2>
+            THINK.
+            <span>CREATE.</span>
+            BUILD.
+        </h2>
+
+        <p>
+            Your intelligent workspace for ideas, questions and projects.
+        </p>
+    </div>
+
+    <div class="ai-core-box">
+
+        <div class="ai-core-status">
+            <span class="status-dot"></span>
+            AI CORE ONLINE
+        </div>
+
+        <div class="ai-chat" id="ai-chat">
+
+    <div class="ai-message">
+        <div class="ai-avatar">✦</div>
+
+        <div>
+            <strong>NEXORA AI</strong>
+            <p>
+                Hello! I'm ready to help you create, learn,
+                code and build your next idea.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+        <div class="ai-input-area">
+            <input
+                type="text"
+                placeholder="Ask NEXORA anything..."
+            >
+
+            <button>
+                Send
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+    </main>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="script.js"></script>
+    <!-- CREATOR INTERFACE -->
+
+<section class="creator-interface" id="creator-interface">
+
+    <div class="creator-header">
+        <span>◈ NEXORA CREATOR</span>
+        <h2>CREATE. <span>DESIGN.</span> PUBLISH.</h2>
+        <p>Your creative workspace for building amazing content.</p>
+    </div>
+
+    <div class="creator-grid">
+
+        <div class="creator-card">
+            <div class="creator-icon">✦</div>
+            <h3>AI Content Ideas</h3>
+            <p>Generate ideas for videos, posts and projects.</p>
+            <button onclick="generateCreatorIdeas()">Generate Ideas</button>
+
+        <div id="creator-ideas"></div>
+        </div>
+
+        <div class="creator-card">
+            <div class="creator-icon">◈</div>
+            <h3>Content Planner</h3>
+            <p>Plan and organize your upcoming content.</p>
+            <button>Open Planner</button>
+        </div>
+
+        <div class="creator-card">
+            <div class="creator-icon">▣</div>
+            <h3>Design Workspace</h3>
+            <p>Create and organize your creative designs.</p>
+            <button>Open Design</button>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- CODE LAB INTERFACE -->
+
+<section class="code-lab-interface" id="code-lab-interface">
+
+    <div class="code-lab-header">
+        <span>&lt;/&gt; NEXORA CODE LAB</span>
+        <h2>WRITE. <span>TEST.</span> BUILD.</h2>
+        <p>Your workspace for writing and improving code.</p>
+    </div>
+
+    <div class="code-editor-box">
+
+        <div class="code-toolbar">
+            <span>Python</span>
+            <button onclick="runCode()">▶ Run Code</button>
+        </div>
+
+        <textarea id="code-editor" spellcheck="false">print("Hello from NEXORA!")</textarea>
+
+        <div class="code-output">
+            <div class="output-title">OUTPUT</div>
+            <pre id="code-output">Run your code to see the output here.</pre>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- LEARNING INTERFACE -->
+
+<section class="learning-interface" id="learning-interface">
+
+    <div class="learning-header">
+        <span>◎ NEXORA LEARNING</span>
+        <h2>LEARN. <span>PRACTICE.</span> MASTER.</h2>
+        <p>Your intelligent workspace for learning and improving your skills.</p>
+    </div>
+
+    <div class="learning-grid">
+
+        <div class="learning-card">
+            <div class="learning-icon">📚</div>
+            <h3>Learn a Topic</h3>
+            <p>Understand difficult concepts with simple explanations.</p>
+            <button onclick="learnTopic()">Start Learning</button>
+        </div>
+
+        <div class="learning-card">
+            <div class="learning-icon">✦</div>
+            <h3>Practice Questions</h3>
+            <p>Practice questions and improve your understanding.</p>
+            <button onclick="practiceQuestions()">Practice Now</button>
+        </div>
+
+        <div class="learning-card">
+            <div class="learning-icon">✓</div>
+            <h3>Progress</h3>
+            <p>Keep track of your learning progress and goals.</p>
+            <button onclick="showLearningProgress()">View Progress</button>
+        </div>
+
+    </div>
+
+</section>
+<!-- PROJECTS INTERFACE -->
+
+<section class="projects-interface" id="projects-interface">
+
+    <div class="projects-header">
+        <span>▣ NEXORA PROJECTS</span>
+        <h2>PLAN. <span>BUILD.</span> TRACK.</h2>
+        <p>Organize your ideas, tasks and project progress.</p>
+    </div>
+
+    <div class="projects-grid">
+
+        <div class="project-card">
+            <div class="project-top">
+                <span>PROJECT 01</span>
+                <span class="project-status">ACTIVE</span>
+            </div>
+
+            <h3>NEXORA</h3>
+
+            <p>
+                Your personal digital intelligence workspace.
+            </p>
+
+            <div class="project-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+
+                <span>40% Complete</span>
+            </div>
+
+            <button onclick="openProject()">Open Project</button>
+        </div>
+
+        <div class="project-card">
+            <div class="project-top">
+                <span>PROJECT 02</span>
+                <span class="project-status">PLANNING</span>
+            </div>
+
+            <h3>New Project</h3>
+
+            <p>
+                Start a new project and organize your ideas.
+            </p>
+
+            <button onclick="createProject()">Create Project</button>
+        </div>
+
+    </div>
+
+</section>
+<!-- ANALYTICS INTERFACE -->
+
+<section class="analytics-interface" id="analytics-interface">
+
+    <div class="analytics-header">
+        <span>◒ NEXORA ANALYTICS</span>
+        <h2>TRACK. <span>ANALYZE.</span> IMPROVE.</h2>
+        <p>Understand your activity and monitor your progress.</p>
+    </div>
+
+    <div class="analytics-grid">
+
+        <div class="analytics-card">
+            <span class="analytics-label">PROJECTS</span>
+            <h3>04</h3>
+            <p>Active projects</p>
+        </div>
+
+        <div class="analytics-card">
+            <span class="analytics-label">LEARNING</span>
+            <h3>72%</h3>
+            <p>Learning progress</p>
+        </div>
+
+        <div class="analytics-card">
+            <span class="analytics-label">AI USAGE</span>
+            <h3>128</h3>
+            <p>AI interactions</p>
+        </div>
+
+        <div class="analytics-card">
+            <span class="analytics-label">CODE</span>
+            <h3>36</h3>
+            <p>Code sessions</p>
+        </div>
+
+    </div>
+
+    <div class="activity-panel">
+
+        <h3>Recent Activity</h3>
+
+        <div class="activity-item">
+            <span>✦</span>
+            <p>Used NEXORA AI Core</p>
+            <small>Today</small>
+        </div>
+
+        <div class="activity-item">
+            <span>&lt;/&gt;</span>
+            <p>Opened Code Lab</p>
+            <small>Today</small>
+        </div>
+
+        <div class="activity-item">
+            <span>◎</span>
+            <p>Completed a learning session</p>
+            <small>Yesterday</small>
+        </div>
+
+        <div class="activity-item">
+            <span>▣</span>
+            <p>Updated a project</p>
+            <small>Yesterday</small>
+        </div>
+
+    </div>
+
+</section>
+
+</body>
+
+</html>
+
+</body>
+
+</html>
+
